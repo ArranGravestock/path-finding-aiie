@@ -1,0 +1,8 @@
+{
+    "player_binds": {
+        "forward": "w",
+        "backward": "s",
+        "left": "a",
+        "right": "d"
+    }
+}
