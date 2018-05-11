@@ -10,8 +10,8 @@ world_height = 9;
 // tile_width = window.innerWidth / world_width;
 // tile_height = window.innerHeight / world_height;
 
-tile_width = 64;
-tile_height = 64
+tile_width = 32;
+tile_height = 32
 
 world = [[]]
 current_path = []
@@ -63,8 +63,11 @@ function generateMaze() {
     
     if (world.length == 9) {
 
-        world[0][0].value = 2 //player start
-        world[8][8].value = 3 //enemy start
+        world[0][0].player = true;
+        world[8][8].enemy = true;
+
+        player_position = [0,0]
+        enemy_position = [8,8]
 
 
         world[1][1].value = 1
@@ -122,11 +125,53 @@ function generateMaze() {
         world[7][5].value = 1
         world[7][6].value = 1
         world[7][7].value = 1
+    } else {
+        generateRandomWalls();
     }
 }
 
-function generateRandom() {
+function generateRandomWalls() {
+    for (var x = 0; x < world_width; x++) {
+        for (var y = 0; y < world_height; y++) {
+            if (Math.random() > 0.7) {
+                world[x][y].value = 1;
+            }
+        }
+    }
 
+    for(var x = 0; x < world_width; x++) {
+        for (var y = 0; y < world_height; y++) {
+            if (world[x][y].value == 1) {
+                console.log(getNeighbours(world[x][y]))
+                var neighbours = getNeighbours(world[x][y]);
+                if (neighbours.length == 4) {
+                    world[x][y].value = 0;
+                }
+            }
+        }
+    }
+
+    function getNeighbours(node) {
+        var neighbours = []
+        var x = node.x;
+        var y = node.y;
+        var value = node.value;
+
+        if (y-1 >= 0 && world[x][y-1].value < 1) {
+            neighbours.push(world[x][y-1])
+        }
+        if (y+1 < world_height && world[x][y+1].value < 1) {
+            neighbours.push(world[x][y+1])
+        }
+        if (x-1 >= 0 && world[x-1][y].value < 1 ) {
+            neighbours.push(world[x-1][y])
+        }
+        if (x+1 < world_width && world[x+1][y].value < 1) {
+            neighbours.push(world[x+1][y])
+        }
+            
+        return neighbours
+    }
 }
 
 
@@ -144,10 +189,12 @@ function draw() {
             if (world[x][y].value == 1) {
                 ctx.fillStyle = '#666'
                 
-            } else if (world[x][y].value == 2) {
+            } else if (world[x][y].player == true) {
+                world[x][y].player = false;
                 player_position = [x,y]
                 ctx.fillStyle = 'green'
-            } else if (world[x][y].value == 3) {
+            } else if (world[x][y].enemy == true) {
+                world[x][y].enemy = false;
                 enemy_position = [x,y]
                 ctx.fillStyle = 'red'
             } else {
@@ -161,20 +208,28 @@ function draw() {
 
 }
 
+function resetgame() {
+    ctx.beginPath();
+    ctx.clearRect(0, 0, canvas.width, canvas.height)
+    createWorld();
+}
+
 function update_player(direction) {
 
     var move_to = [player_position[0] + direction[0], player_position[1] + direction[1]]
 
+    var moves = calculateNextMove(world, enemy_position, player_position)
+    update_enemy(moves[1]);
+
+    if (enemy_position[0] == move_to[0] && enemy_position[1] == move_to[1] || enemy_position[0] == player_position[0] && enemy_position[1] == player_position[1]) {
+        alert("game over! you died!");
+        console.log(player_position)
+        resetgame();
+    }
+
     if (!(world[move_to[0]] == undefined || world[move_to[0]][move_to[1]] == undefined)) {
 
         if ( world[move_to[0]][move_to[1]].value != 1 ) {
-
-            if (world[move_to[0]][move_to[1]].value == 3) {
-                alert("game over! you died!");
-                //reset game
-            }
-
-            world[move_to[0]][move_to[1]].value = 0
 
             ctx.beginPath();
             ctx.clearRect(player_position[0] * tile_width, player_position[1] * tile_height, tile_width, tile_height)
@@ -183,7 +238,6 @@ function update_player(direction) {
             ctx.fill()
 
             player_position = [move_to[0], move_to[1]]
-            world[move_to[0]][move_to[1]].value = 2
 
             ctx.beginPath();
             ctx.clearRect(player_position[0] * tile_width, player_position[1] * tile_height, tile_width, tile_height)
@@ -198,10 +252,7 @@ function update_player(direction) {
         console.log("out of bounds");
     }
     
-    var moves = calculateNextMove(world, enemy_position, player_position)
-    console.log("moves");
-    console.log(moves)
-    update_enemy(moves[1]);
+    
 }
 
 function update_enemy(move_to) {
@@ -214,9 +265,9 @@ function update_enemy(move_to) {
     ctx.rect(enemy_position[0] * tile_width, enemy_position[1] * tile_height, tile_width, tile_height);
     ctx.fill()
 
-    enemy_position = [move_to.x, move_to.y]
+    enemy_position = [move_to[0], move_to[1]]
 
-    world[move_to.x][move_to.y].value = 3
+    world[move_to[0]][move_to[1]].value = 3
 
     ctx.beginPath();
     ctx.clearRect(enemy_position[0] * tile_width, enemy_position[1] * tile_height, tile_width, tile_height)
@@ -237,7 +288,7 @@ function calculateNextMove(world, path_start, path_end) {
     var walkable = 0;
 
     function ManhattanDistance(start, end) {
-        return Math.abs(start.x - end.x) + Math.abs(start.y - end.y);
+        return (Math.abs(start.x - end.x) + Math.abs(start.y - end.y));
     }
     
     function findPath (start, end, grid) {
@@ -249,20 +300,22 @@ function calculateNextMove(world, path_start, path_end) {
         var closed_set = []
         var open_set = []
         
-        var start_node = new Node(start_x, start_y, 3)
+        var end_node = new Node(end_x, end_y, 0)
+        
+        var start_node = new Node(start_x, start_y, 0)
         start_node.g = 0;
         start_node.f = 0;
 
         open_set.push(start_node)
 
         while (open_set.length > 0) {
-            //find the lowest node in the set
+            //find the lowest f in the set
             var node = open_set[0]
             for (var tile in open_set) {
                 node = (open_set[tile].f < node.f) ? open_set[tile] : node
             }
             
-            //remove the lowest from the openset
+            //remove the lowest f from the openset
             for (var i = 0; i < open_set.length; i++) {
                 if (node == open_set[i]) {
                     open_set.splice(i, 1);
@@ -274,10 +327,13 @@ function calculateNextMove(world, path_start, path_end) {
             closed_set.push(node)
 
             //if matching paths then target found
-            // console.log(node);
-            // console.log({x: start_x, y: start_y, value: 2})
-            if (node == {x: start_x, y: start_y}) {
-                console.log("found");
+            if (node == world[end_x][end_y]) {
+                var path = [[node.x, node.y]]
+                while (node.parent) {
+                    node = node.parent;
+                    path.push([node.x, node.y])
+                }
+                return path.reverse();
             }
 
             //get the neighbours for the node
@@ -304,7 +360,7 @@ function calculateNextMove(world, path_start, path_end) {
                 if (!open_set.includes(neighbour) || g < neighbour.g) {
                     
                     neighbour.g = g;
-                    neighbour.h = ManhattanDistance(neighbour, start_node)
+                    neighbour.h = ManhattanDistance(neighbour, end_node)
                     neighbour.f = neighbour.g + neighbour.h;
                     neighbour.parent = node;
 
@@ -318,8 +374,6 @@ function calculateNextMove(world, path_start, path_end) {
             }
             
         }
-        console.log(closed_set)
-        console.log(open_set);
         return [];
     }
 
