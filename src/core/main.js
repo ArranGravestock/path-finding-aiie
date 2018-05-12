@@ -4,8 +4,8 @@ window.onload = function() {
 
 
 
-world_width = 9;
-world_height = 9;
+world_width = 24;
+world_height = 24;
 
 // tile_width = window.innerWidth / world_width;
 // tile_height = window.innerHeight / world_height;
@@ -21,6 +21,11 @@ path_end = []
 player_position = {}
 enemy_position = {}
 
+score = 0;
+
+search_time = 0;
+
+enemy_interval = setInterval(update_enemy, 450)
 
 
 function initialise() {
@@ -73,7 +78,7 @@ function generateMaze() {
         world[1][1].value = 1
         world[1][2].value = 1
         world[1][3].value = 1
-        world[1][4].value = 0
+        world[1][4].coin = true
         world[1][5].value = 1
         world[1][6].value = 0
         world[1][7].value = 1
@@ -127,6 +132,7 @@ function generateMaze() {
         world[7][7].value = 1
     } else {
         generateRandomWalls(world_width, world_height);
+        generateCoin(4);
     }
 }
 
@@ -143,16 +149,45 @@ function generateRandomWalls(width, height) {
         for (var y = 0; y < height; y++) {
             if (world[x][y].value == 1) {
                 var neighbours = getNeighbours(world[x][y], 1);
+                
                 if (neighbours.length == 4) {
                     world[x][y].value = 0;
                 }
             } 
-			else if (world[x][y].value == 3) {
-				var neighbours = getNeighbours(world[x][y], 0)
+			else if (world[x][y].value == 0) {
+                var neighbours = getNeighbours(world[x][y], 1)
 				if (neighbours.length == 4) {
 					world[x+1][y].value = 1;
 				}
 			}
+        }
+    }
+
+    player_set = false;
+    for (var x = 0; x < width; x++) {
+        if (player_set) {
+            break;
+        }
+        for (var y = 0; y < height; y++) {
+            if (world[x][y].value == 0) {
+                world[x][y].player = true;
+                player_set = true;
+                break;
+            }
+        }
+    }
+
+    enemy_set = false;
+    for (var x = width-1; x > 0; x--) {
+        if (enemy_set) {
+            break;
+        }
+        for (var y = width-1; y > 0; y--) {
+            if (world[x][y].value == 0) {
+                world[x][y].enemy = true;
+                enemy_set = true;
+                break;
+            }
         }
     }
 
@@ -194,7 +229,6 @@ function draw() {
             
             if (world[x][y].value == 1) {
                 ctx.fillStyle = '#666'
-                
             } else if (world[x][y].player == true) {
                 world[x][y].player = false;
                 player_position = {x: x,y: y}
@@ -203,6 +237,8 @@ function draw() {
                 world[x][y].enemy = false;
                 enemy_position = {x: x,y: y}
                 ctx.fillStyle = 'red'
+            } else if (world[x][y].coin == true) {
+                ctx.fillStyle = 'yellow'
             } else {
                 ctx.fillStyle = 'white'
             }
@@ -217,6 +253,7 @@ function draw() {
 function reset_game() {
     ctx.beginPath();
     ctx.clearRect(0, 0, canvas.width, canvas.height)
+    score = 0;
     createWorld();
 }
 
@@ -224,17 +261,23 @@ function update_player(direction) {
 
     var move_to = {x: player_position.x + direction.x, y: player_position.y + direction.y}
 
-    var moves = calculateNextMove(world, enemy_position, player_position)
-    update_enemy(moves[1]);
-
     if (enemy_position.x == move_to.x && enemy_position.y == move_to.y || enemy_position.x == player_position.x && enemy_position.y == player_position.y) {
         alert("game over! you died!");
-        console.log(player_position)
         reset_game();
     } else {
+
         if (!(world[move_to.x] == undefined || world[move_to.x][move_to.y] == undefined)) {
     
             if ( world[move_to.x][move_to.y].value != 1 ) {
+
+                if (world[move_to.x][move_to.y].coin == true) {
+                    world[move_to.x][move_to.y].coin = false;
+                    //updatescore
+                    score += 100;
+                    console.log(score);
+                    
+                    generateCoin(1);
+                }
     
                 ctx.beginPath();
                 ctx.clearRect(player_position.x * tile_width, player_position.y * tile_height, tile_width, tile_height)
@@ -261,29 +304,83 @@ function update_player(direction) {
 
 }
 
-function update_enemy(move_to) {
+function generateCoin(number_to_draw) {
+    var i = 0;
+    var coin_generated = false;
+    for (var x = 0; x < world_width; x++) {
+        if (coin_generated && i == number_to_draw) {
+            break;
+        }
+        for (var y = 0; y < world_height; y++) {
+            if (Math.random() > 0.99) {
+                if (world[x][y].value == 0) {
+                    world[x][y].coin = true;
+                    coin_generated = true;
+                    i++;
+                    break;
+                }
+            }
+        }
+    }
+    redrawCoins();
+}
 
-    //clear the previous square the enemy was on
-    world[enemy_position.x][enemy_position.y].value = 0
+function redrawCoins() {
+    for (var x = 0; x < world_width; x++) {
+        for (var y = 0; y < world_height; y++) {
+            if (world[x][y].coin == true) {
+                ctx.beginPath();
+                ctx.rect(x * tile_width, y * tile_height, tile_width, tile_height)
+                ctx.fillStyle = 'yellow'
+                ctx.fill();
+            } 
+        }
+    }
+}
 
-    ctx.beginPath();
-    ctx.clearRect(enemy_position.x * tile_width, enemy_position.y * tile_height, tile_width, tile_height)
-    ctx.fillStyle = 'white'
-    ctx.rect(enemy_position.x * tile_width, enemy_position.y * tile_height, tile_width, tile_height);
-    ctx.fill()
+function update_enemy() {
 
-    //update the new position of the enemy
-    enemy_position.x = move_to.x
-    enemy_position.y = move_to.y
+    var moves = calculateNextMove(world, enemy_position, player_position)
+    var move_to = moves[1]
 
-    //update the world item
-    world[enemy_position.x][enemy_position.y].value = 3
+    //quick fix to reset game where unblockable path exists
+    if (!move_to) {
+        reset_game();
+    }
+    
+    if (enemy_position.x == move_to.x && enemy_position.y == move_to.y || enemy_position.x == player_position.x && enemy_position.y == player_position.y) {
+        alert("game over! you died!");
+        reset_game();
+    } else {
 
-    ctx.beginPath();
-    ctx.clearRect(enemy_position.x * tile_width, enemy_position.y * tile_height, tile_width, tile_height)
-    ctx.fillStyle = 'red'
-    ctx.rect(enemy_position.x * tile_width, enemy_position.y * tile_height, tile_width, tile_height);
-    ctx.fill()
+        //clear the previous square the enemy was on
+        world[enemy_position.x][enemy_position.y].enemy = false
+
+        //if enemy steps over a coin destroy it :)
+        if (world[enemy_position.x][enemy_position.y].coin == true) {
+            world[enemy_position.x][enemy_position.y].coin = false;
+            generateCoin(1);
+        }
+
+        ctx.beginPath();
+        ctx.clearRect(enemy_position.x * tile_width, enemy_position.y * tile_height, tile_width, tile_height)
+        ctx.fillStyle = 'white'
+        ctx.rect(enemy_position.x * tile_width, enemy_position.y * tile_height, tile_width, tile_height);
+        ctx.fill()
+
+        //update the new position of the enemy
+        enemy_position.x = move_to.x
+        enemy_position.y = move_to.y
+
+        //update the world item
+        world[enemy_position.x][enemy_position.y].enemy = true
+
+        ctx.beginPath();
+        ctx.clearRect(enemy_position.x * tile_width, enemy_position.y * tile_height, tile_width, tile_height)
+        ctx.fillStyle = 'red'
+        ctx.rect(enemy_position.x * tile_width, enemy_position.y * tile_height, tile_width, tile_height);
+        ctx.fill()
+    }
 }
 
 
@@ -305,6 +402,7 @@ function calculateNextMove(world, path_start, path_end) {
         var start_y = start.y;
         var end_x = end.x;
         var end_y = end.y
+        var time_start = Date.now();
 
         var closed_set = []
         var open_set = []
@@ -337,11 +435,14 @@ function calculateNextMove(world, path_start, path_end) {
 
             //if matching paths then target found
             if (node == world[end_x][end_y]) {
-                var path = [[node.x, node.y]]
+                var path = [{x: node.x, y: node.y}]
                 while (node.parent) {
                     node = node.parent;
                     path.push({x: node.x, y: node.y})
                 }
+                var time_end = Date.now();
+                search_time = time_end - time_start;
+                console.log(search_time);
                 return path.reverse();
             }
 
