@@ -78,7 +78,10 @@ function generateMaze() {
         world[1][1].value = 1
         world[1][2].value = 1
         world[1][3].value = 1
+
         world[1][4].coin = true
+        world[1][4].coin = true;
+
         world[1][5].value = 1
         world[1][6].value = 0
         world[1][7].value = 1
@@ -218,6 +221,9 @@ function generateRandomWalls(width, height) {
 }
 
 function draw() {
+
+
+
     ctx.fillStyle = '#ccc';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
@@ -248,6 +254,10 @@ function draw() {
         }
     }
 
+    ctx.fillStyle = 'white'
+    ctx.font = "20px Arial"
+    ctx.fillText(score, world_width * tile_width + 10, 20);
+
 }
 
 function reset_game() {
@@ -257,12 +267,24 @@ function reset_game() {
     createWorld();
 }
 
+function update_score(points) {
+    score += points
+    redraw_score(score);
+}
+
+function redraw_score(score) {
+    ctx.clearRect(world_width * tile_width, 0, 100,100)
+    ctx.fillStyle = 'white'
+    ctx.font = "20px Arial"
+    ctx.fillText(score, world_width * tile_width + 10, 20);
+}
+
 function update_player(direction) {
 
     var move_to = {x: player_position.x + direction.x, y: player_position.y + direction.y}
 
     if (enemy_position.x == move_to.x && enemy_position.y == move_to.y || enemy_position.x == player_position.x && enemy_position.y == player_position.y) {
-        alert("game over! you died!");
+        alert(`Game over! You scored ${score} points`);
         reset_game();
     } else {
 
@@ -272,10 +294,11 @@ function update_player(direction) {
 
                 if (world[move_to.x][move_to.y].coin == true) {
                     world[move_to.x][move_to.y].coin = false;
-                    //updatescore
-                    score += 100;
+                    world[move_to.x][move_to.y].value = 0;
+                   
                     console.log(score);
-                    
+
+                    update_score(100)
                     generateCoin(1);
                 }
     
@@ -315,6 +338,7 @@ function generateCoin(number_to_draw) {
             if (Math.random() > 0.99) {
                 if (world[x][y].value == 0) {
                     world[x][y].coin = true;
+                    world[x][y].value = 0.5;
                     coin_generated = true;
                     i++;
                     break;
@@ -359,6 +383,7 @@ function update_enemy() {
         //if enemy steps over a coin destroy it :)
         if (world[enemy_position.x][enemy_position.y].coin == true) {
             world[enemy_position.x][enemy_position.y].coin = false;
+            world[enemy_position.x][enemy_position.y].value = 0.5
             generateCoin(1);
         }
 
