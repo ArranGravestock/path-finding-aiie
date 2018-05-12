@@ -58,7 +58,7 @@ function createWorld() {
         world[x] = []
 
         for (var y = 0; y < world_height; y++) {
-            world[x][y] = new Node(x, y, 0)
+            world[x][y] = new Node(x, y, 1)
         }
     }
     
@@ -80,64 +80,64 @@ function generateMaze() {
         enemy_position = {x: 8, y: 8}
 
 
-        world[1][1].value = 1
-        world[1][2].value = 1
-        world[1][3].value = 1
+        world[1][1].value = 2
+        world[1][2].value = 2
+        world[1][3].value = 2
 
         world[1][4].coin = true
         world[1][4].coin = true
 
-        world[1][5].value = 1
-        world[1][6].value = 0
-        world[1][7].value = 1
+        world[1][5].value = 2
+        world[1][6].value = 1
+        world[1][7].value = 2
 
-        world[2][1].value = 0
-        world[2][2].value = 0
-        world[2][3].value = 1
-        world[2][4].value = 0
-        world[2][5].value = 1
-        world[2][6].value = 0
-        world[2][7].value = 1
+        world[2][1].value = 1
+        world[2][2].value = 1
+        world[2][3].value = 2
+        world[2][4].value = 1
+        world[2][5].value = 2
+        world[2][6].value = 1
+        world[2][7].value = 2
 
-        world[3][1].value = 1
-        world[3][2].value = 0
-        world[3][3].value = 1
-        world[3][4].value = 0
-        world[3][5].value = 0
-        world[3][6].value = 0
-        world[3][7].value = 1
+        world[3][1].value = 2
+        world[3][2].value = 1
+        world[3][3].value = 2
+        world[3][4].value = 1
+        world[3][5].value = 1
+        world[3][6].value = 1
+        world[3][7].value = 2
 
-        world[4][1].value = 1
-        world[4][2].value = 0
-        world[4][3].value = 1
-        world[4][4].value = 1
-        world[4][5].value = 1
-        world[4][6].value = 0
-        world[4][7].value = 1
+        world[4][1].value = 2
+        world[4][2].value = 1
+        world[4][3].value = 2
+        world[4][4].value = 2
+        world[4][5].value = 2
+        world[4][6].value = 1
+        world[4][7].value = 2
 
-        world[5][1].value = 1
-        world[5][2].value = 0
-        world[5][3].value = 0
-        world[5][4].value = 0
-        world[5][5].value = 1
-        world[5][6].value = 0
-        world[5][7].value = 1
+        world[5][1].value = 2
+        world[5][2].value = 1
+        world[5][3].value = 1
+        world[5][4].value = 1
+        world[5][5].value = 2
+        world[5][6].value = 1
+        world[5][7].value = 2
 
-        world[6][1].value = 1
-        world[6][2].value = 0
-        world[6][3].value = 1
-        world[6][4].value = 0
-        world[6][5].value = 1
-        world[6][6].value = 0
-        world[6][7].value = 0
+        world[6][1].value = 2
+        world[6][2].value = 1
+        world[6][3].value = 2
+        world[6][4].value = 1
+        world[6][5].value = 2
+        world[6][6].value = 1
+        world[6][7].value = 1
 
-        world[7][1].value = 1
-        world[7][2].value = 0
-        world[7][3].value = 1
-        world[7][4].value = 0
-        world[7][5].value = 1
-        world[7][6].value = 1
-        world[7][7].value = 1
+        world[7][1].value = 2
+        world[7][2].value = 1
+        world[7][3].value = 2
+        world[7][4].value = 1
+        world[7][5].value = 2
+        world[7][6].value = 2
+        world[7][7].value = 2
     } else {
         generateRandomWalls(world_width, world_height)
         generateCoin(4)
@@ -148,24 +148,24 @@ function generateRandomWalls(width, height) {
     for (var x = 0; x < width; x++) {
         for (var y = 0; y < height; y++) {
             if (Math.random() > 0.7) {
-                world[x][y].value = 1
+                world[x][y].value = 2
             }
         }
     }
 
     for(var x = 0; x < width; x++) {
         for (var y = 0; y < height; y++) {
-            if (world[x][y].value == 1) {
-                var neighbours = getNeighbours(world[x][y], 1)
+            if (world[x][y].value == 2) {
+                var neighbours = getNeighbours(world[x][y], 2)
                 
                 if (neighbours.length == 4) {
-                    world[x][y].value = 0
+                    world[x][y].value = 1
                 }
             } 
-			else if (world[x][y].value == 0) {
-                var neighbours = getNeighbours(world[x][y], 1)
+			else if (world[x][y].value == 1) {
+                var neighbours = getNeighbours(world[x][y], 2)
 				if (neighbours.length == 4) {
-					world[x+1][y].value = 1
+					world[x+1][y].value = 2
 				}
 			}
         }
@@ -177,7 +177,7 @@ function generateRandomWalls(width, height) {
             break
         }
         for (var y = 0; y < height; y++) {
-            if (world[x][y].value == 0) {
+            if (world[x][y].value == 1) {
                 world[x][y].player = true
                 player_set = true
                 break
@@ -191,7 +191,7 @@ function generateRandomWalls(width, height) {
             break
         }
         for (var y = width-1; y > 0; y--) {
-            if (world[x][y].value == 0) {
+            if (world[x][y].value == 1) {
                 world[x][y].enemy = true
                 enemy_set = true
                 break
@@ -233,7 +233,7 @@ function draw() {
             ctx.beginPath()
             ctx.rect(x * tile_width, y * tile_height, tile_width, tile_height)
             
-            if (world[x][y].value == 1) {
+            if (world[x][y].value == 2) {
                 ctx.fillStyle = '#666'
             } else if (world[x][y].player == true) {
                 world[x][y].player = false
@@ -300,11 +300,11 @@ function update_player(direction) {
 
         if (!(world[move_to.x] == undefined || world[move_to.x][move_to.y] == undefined)) {
     
-            if ( world[move_to.x][move_to.y].value != 1 ) {
+            if ( world[move_to.x][move_to.y].value <= 1 ) {
 
                 if (world[move_to.x][move_to.y].coin == true) {
                     world[move_to.x][move_to.y].coin = false
-                    world[move_to.x][move_to.y].value = 0
+                    world[move_to.x][move_to.y].value = 1
 
                     update_score(100)
                     generateCoin(1)
@@ -337,17 +337,15 @@ function update_player(direction) {
 
 function generateCoin(number_to_draw) {
     let i = 0
-    let coin_generated = false
     for (let x = 0; x < world_width; x++) {
-        if (coin_generated && i == number_to_draw) {
+        if (i == number_to_draw) {
             break
         }
         for (let y = 0; y < world_height; y++) {
             if (Math.random() > 0.99) {
-                if (world[x][y].value == 0) {
+                if (world[x][y].value == 1) {
                     world[x][y].coin = true
-                    world[x][y].value = 0.5
-                    coin_generated = true
+                    world[x][y].value = 0
                     i++
                     break
                 }
@@ -390,7 +388,7 @@ function update_enemy() {
         //if enemy steps over a coin destroy it :)
         if (world[enemy_position.x][enemy_position.y].coin == true) {
             world[enemy_position.x][enemy_position.y].coin = false
-            world[enemy_position.x][enemy_position.y].value = 0.5
+            world[enemy_position.x][enemy_position.y].value = 0
             update_score(-100)
             generateCoin(1)
         }
@@ -427,6 +425,7 @@ function calculateNextMove(world, path_start, path_end) {
     var walkable = 0
 
     function ManhattanDistance(start, end) {
+        //console.log(`${start.x} ${start.y} ${end.x} ${end.y}`)
         return (Math.abs(start.x - end.x) + Math.abs(start.y - end.y))
     }
     
@@ -479,7 +478,7 @@ function calculateNextMove(world, path_start, path_end) {
             }
 
             //get the neighbours for the node
-            let neighbours = getNeighbours(node)
+            let neighbours = getNeighbours(node, 1)
 
             //for every neighbour
             for (var i = 0; i < neighbours.length; i++) {
@@ -496,13 +495,12 @@ function calculateNextMove(world, path_start, path_end) {
                 let x = neighbour.x
                 let y = neighbour.y
 
-                //could be wrong
-                let g = node.g + ManhattanDistance(neighbour, end_node)
+                let g = node.g + node.value * ManhattanDistance(neighbour, end_node)
 
                 if (!open_set.includes(neighbour) || g < neighbour.g) {
                     
                     neighbour.g = g
-                    neighbour.h = ManhattanDistance(neighbour, end_node)
+                    neighbour.h =  neighbour.value * ManhattanDistance(neighbour, end_node)
                     neighbour.f = neighbour.g + neighbour.h
                     neighbour.parent = node
 
@@ -519,22 +517,22 @@ function calculateNextMove(world, path_start, path_end) {
         return []
     }
 
-    function getNeighbours(node) {
+    function getNeighbours(node, max) {
         var neighbours = []
         var x = node.x
         var y = node.y
         var value = node.value
 
-        if (y-1 >= 0 && world[x][y-1].value < 1) {
+        if (y-1 >= 0 && world[x][y-1].value <= max) {
             neighbours.push(world[x][y-1])
         }
-        if (y+1 < world_height && world[x][y+1].value < 1) {
+        if (y+1 < world_height && world[x][y+1].value <= max) {
             neighbours.push(world[x][y+1])
         }
-        if (x-1 >= 0 && world[x-1][y].value < 1 ) {
+        if (x-1 >= 0 && world[x-1][y].value <= max ) {
             neighbours.push(world[x-1][y])
         }
-        if (x+1 < world_width && world[x+1][y].value < 1) {
+        if (x+1 < world_width && world[x+1][y].value <= max) {
             neighbours.push(world[x+1][y])
         }
             
