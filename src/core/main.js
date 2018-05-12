@@ -178,6 +178,7 @@ function generateRandomWalls(width, height) {
         }
         for (var y = 0; y < height; y++) {
             if (world[x][y].value == 1) {
+                console.log(`player set at : ${world[x][y].x}`)
                 world[x][y].player = true
                 player_set = true
                 break
@@ -368,9 +369,42 @@ function redrawCoins() {
     }
 }
 
+function draw_path(moves) {
+    for (let x = 0; x < world_width; x++) {
+        for (let y = 0; y < world_height; y++) {
+            if (world[x][y].path == true) {
+                world[x][y].path = false;
+                ctx.beginPath()
+                ctx.rect(x * tile_width, y * tile_height, tile_width, tile_height)
+                ctx.fillStyle = 'white'
+                ctx.fill()
+            } 
+        }
+    }
+    for (let move in moves) {
+       world[moves[move].x][moves[move].y].path = true;
+    }
+    for (let x = 0; x < world_width; x++) {
+        for (let y = 0; y < world_height; y++) {
+            if (world[x][y].player == true) {
+                continue
+            }
+            if (world[x][y].path == true) {
+                ctx.beginPath()
+                ctx.rect(x * tile_width, y * tile_height, tile_width, tile_height)
+                ctx.fillStyle = "rgba(0, 0, 255, 0.1)"
+                ctx.fill()
+            } 
+        }
+    }
+}
+
 function update_enemy() {
 
     const moves = calculateNextMove(world, enemy_position, player_position)
+
+    //draw_path(moves);
+
     const move_to = moves[1]
 
     //quick fix to reset game where unblockable path exists
