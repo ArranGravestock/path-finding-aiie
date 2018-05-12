@@ -1,0 +1,23 @@
+{
+  "name": "path-finding-aiie",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "dependencies": {
+    "heap": "^0.2.6"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ArranGravestock/path-finding-aiee.git"
+  },
+  "author": "Arran Gravestock",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ArranGravestock/path-finding-aiee/issues"
+  },
+  "homepage": "https://github.com/ArranGravestock/path-finding-aiee#readme"
+}

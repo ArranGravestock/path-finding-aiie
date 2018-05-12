@@ -4,18 +4,14 @@ window.onload = function() {
     initialise()
 }
 
-
-
 const world_width = 24
 const world_height = 24
 
 const tile_width = 32
 const tile_height = 32
 
-// tile_width = window.innerWidth / world_width
-// tile_height = window.innerHeight / world_height
-
-
+//const tile_width = window.innerWidth / world_width
+//const tile_height = window.innerHeight / world_height
 
 let world = [[]]
 let current_path = []
@@ -54,10 +50,10 @@ function Node(x, y, value) {
 }
 
 function createWorld() {
-    for (var x = 0; x < world_width; x++) {
+    for (let x = 0; x < world_width; x++) {
         world[x] = []
 
-        for (var y = 0; y < world_height; y++) {
+        for (let y = 0; y < world_height; y++) {
             world[x][y] = new Node(x, y, 1)
         }
     }
@@ -145,25 +141,25 @@ function generateMaze() {
 }
 
 function generateRandomWalls(width, height) {
-    for (var x = 0; x < width; x++) {
-        for (var y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+        for (let y = 0; y < height; y++) {
             if (Math.random() > 0.7) {
                 world[x][y].value = 2
             }
         }
     }
 
-    for(var x = 0; x < width; x++) {
-        for (var y = 0; y < height; y++) {
+    for(let x = 0; x < width; x++) {
+        for (let y = 0; y < height; y++) {
             if (world[x][y].value == 2) {
-                var neighbours = getNeighbours(world[x][y], 2)
+                let neighbours = getNeighbours(world[x][y], 2)
                 
                 if (neighbours.length == 4) {
                     world[x][y].value = 1
                 }
             } 
 			else if (world[x][y].value == 1) {
-                var neighbours = getNeighbours(world[x][y], 2)
+                let neighbours = getNeighbours(world[x][y], 2)
 				if (neighbours.length == 4) {
 					world[x+1][y].value = 2
 				}
@@ -172,11 +168,11 @@ function generateRandomWalls(width, height) {
     }
 
     let player_set = false
-    for (var x = 0; x < width; x++) {
+    for (let x = 0; x < width; x++) {
         if (player_set) {
             break
         }
-        for (var y = 0; y < height; y++) {
+        for (let y = 0; y < height; y++) {
             if (world[x][y].value == 1) {
                 console.log(`player set at : ${world[x][y].x}`)
                 world[x][y].player = true
@@ -187,39 +183,17 @@ function generateRandomWalls(width, height) {
     }
 
     let enemy_set = false
-    for (var x = width-1; x > 0; x--) {
+    for (let x = width-1; x > 0; x--) {
         if (enemy_set) {
             break
         }
-        for (var y = width-1; y > 0; y--) {
+        for (let y = width-1; y > 0; y--) {
             if (world[x][y].value == 1) {
                 world[x][y].enemy = true
                 enemy_set = true
                 break
             }
         }
-    }
-
-    function getNeighbours(node, max) {
-        var neighbours = []
-        var x = node.x
-        var y = node.y
-        var value = node.value
-
-        if (y-1 >= 0 && world[x][y-1].value < max) {
-            neighbours.push(world[x][y-1])
-        }
-        if (y+1 < world_height && world[x][y+1].value < max) {
-            neighbours.push(world[x][y+1])
-        }
-        if (x-1 >= 0 && world[x-1][y].value < max ) {
-            neighbours.push(world[x-1][y])
-        }
-        if (x+1 < world_width && world[x+1][y].value < max) {
-            neighbours.push(world[x+1][y])
-        }
-		
-        return neighbours
     }
 }
 
@@ -228,8 +202,8 @@ function draw() {
     ctx.fillStyle = '#ccc'
     ctx.fillRect(0, 0, canvas.width, canvas.height)
 
-    for (var x = 0; x < world_width; x++) {
-        for (var y = 0; y < world_height; y++) {
+    for (let x = 0; x < world_width; x++) {
+        for (let y = 0; y < world_height; y++) {
 
             ctx.beginPath()
             ctx.rect(x * tile_width, y * tile_height, tile_width, tile_height)
@@ -353,6 +327,8 @@ function generateCoin(number_to_draw) {
             }
         }
     }
+
+    let neighbours = getNeighbours(player_position, 1)
     redrawCoins()
 }
 
@@ -450,13 +426,13 @@ function update_enemy() {
 
 
 function calculateNextMove(world, path_start, path_end) {
-    var world_width = world[0].length
-    var world_height = world.length
-    var world_size = world_width * world_height
+    let world_width = world[0].length
+    let world_height = world.length
+    let world_size = world_width * world_height
 
-    var node
+    let node
 
-    var walkable = 0
+    let walkable = 0
 
     function ManhattanDistance(start, end) {
         //console.log(`${start.x} ${start.y} ${end.x} ${end.y}`)
@@ -464,18 +440,18 @@ function calculateNextMove(world, path_start, path_end) {
     }
     
     function findPath (start, end, grid) {
-        var start_x = start.x
-        var start_y = start.y
-        var end_x = end.x
-        var end_y = end.y
-        var time_start = Date.now()
+        let start_x = start.x
+        let start_y = start.y
+        let end_x = end.x
+        let end_y = end.y
+        let time_start = Date.now()
 
-        var closed_set = []
-        var open_set = []
+        let closed_set = []
+        let open_set = []
         
-        var end_node = new Node(end_x, end_y, 0)
+        let end_node = new Node(end_x, end_y, 0)
         
-        var start_node = new Node(start_x, start_y, 0)
+        let start_node = new Node(start_x, start_y, 0)
         start_node.g = 0
         start_node.f = 0
 
@@ -483,13 +459,13 @@ function calculateNextMove(world, path_start, path_end) {
 
         while (open_set.length > 0) {
             //find the lowest f in the set
-            var node = open_set[0]
-            for (var tile in open_set) {
+            let node = open_set[0]
+            for (let tile in open_set) {
                 node = (open_set[tile].f < node.f) ? open_set[tile] : node
             }
             
             //remove the lowest f from the openset
-            for (var i = 0; i < open_set.length; i++) {
+            for (let i = 0; i < open_set.length; i++) {
                 if (node == open_set[i]) {
                     open_set.splice(i, 1)
                     break
@@ -501,21 +477,21 @@ function calculateNextMove(world, path_start, path_end) {
 
             //if matching paths then target found
             if (node == world[end_x][end_y]) {
-                var path = [{x: node.x, y: node.y}]
+                let path = [{x: node.x, y: node.y}]
                 while (node.parent) {
                     node = node.parent
                     path.push({x: node.x, y: node.y})
                 }
-                var time_end = Date.now()
+                let time_end = Date.now()
                 update_time(time_end - time_start)
                 return path.reverse()
             }
 
             //get the neighbours for the node
-            let neighbours = getNeighbours(node, 1)
+            let neighbours = getNeighbours(node, 2)
 
             //for every neighbour
-            for (var i = 0; i < neighbours.length; i++) {
+            for (let i = 0; i < neighbours.length; i++) {
                 let neighbour = neighbours[i]
 
                 if (closed_set.includes(neighbour)) {
@@ -550,36 +526,35 @@ function calculateNextMove(world, path_start, path_end) {
         }
         return []
     }
-
-    function getNeighbours(node, max) {
-        var neighbours = []
-        var x = node.x
-        var y = node.y
-        var value = node.value
-
-        if (y-1 >= 0 && world[x][y-1].value <= max) {
-            neighbours.push(world[x][y-1])
-        }
-        if (y+1 < world_height && world[x][y+1].value <= max) {
-            neighbours.push(world[x][y+1])
-        }
-        if (x-1 >= 0 && world[x-1][y].value <= max ) {
-            neighbours.push(world[x-1][y])
-        }
-        if (x+1 < world_width && world[x+1][y].value <= max) {
-            neighbours.push(world[x+1][y])
-        }
-            
-        return neighbours
-    }
-
+    
     return findPath (path_start, path_end, world)
 
 }
 
+function getNeighbours(node, max) {
+    let neighbours = []
+    let x = node.x
+    let y = node.y
+    let value = node.value
+
+    if (y-1 >= 0 && world[x][y-1].value < max) {
+        neighbours.push(world[x][y-1])
+    }
+    if (y+1 < world_height && world[x][y+1].value < max) {
+        neighbours.push(world[x][y+1])
+    }
+    if (x-1 >= 0 && world[x-1][y].value < max ) {
+        neighbours.push(world[x-1][y])
+    }
+    if (x+1 < world_width && world[x+1][y].value < max) {
+        neighbours.push(world[x+1][y])
+    }
+        
+    return neighbours
+}
 
 
-var config = 
+let config = 
 {
     "player_binds": {
         "up": 87,
