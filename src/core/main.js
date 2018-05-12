@@ -18,8 +18,8 @@ current_path = []
 path_start = [world_height, world_width]
 path_end = []
 
-player_position = []
-enemy_position = []
+player_position = {}
+enemy_position = {}
 
 
 
@@ -66,8 +66,8 @@ function generateMaze() {
         world[0][0].player = true;
         world[8][8].enemy = true;
 
-        player_position = [0,0]
-        enemy_position = [8,8]
+        player_position = {x: 0,y: 0}
+        enemy_position = {x: 8, y: 8}
 
 
         world[1][1].value = 1
@@ -126,55 +126,61 @@ function generateMaze() {
         world[7][6].value = 1
         world[7][7].value = 1
     } else {
-        generateRandomWalls();
+        generateRandomWalls(world_width, world_height);
     }
 }
 
-function generateRandomWalls() {
-    for (var x = 0; x < world_width; x++) {
-        for (var y = 0; y < world_height; y++) {
+function generateRandomWalls(width, height) {
+    for (var x = 0; x < width; x++) {
+        for (var y = 0; y < height; y++) {
             if (Math.random() > 0.7) {
                 world[x][y].value = 1;
             }
         }
     }
 
-    for(var x = 0; x < world_width; x++) {
-        for (var y = 0; y < world_height; y++) {
+    for(var x = 0; x < width; x++) {
+        for (var y = 0; y < height; y++) {
             if (world[x][y].value == 1) {
-                console.log(getNeighbours(world[x][y]))
-                var neighbours = getNeighbours(world[x][y]);
+                var neighbours = getNeighbours(world[x][y], 1);
                 if (neighbours.length == 4) {
                     world[x][y].value = 0;
                 }
-            }
+            } 
+			else if (world[x][y].value == 3) {
+				var neighbours = getNeighbours(world[x][y], 0)
+				if (neighbours.length == 4) {
+					world[x+1][y].value = 1;
+				}
+			}
         }
     }
 
-    function getNeighbours(node) {
+    function getNeighbours(node, max) {
         var neighbours = []
         var x = node.x;
         var y = node.y;
         var value = node.value;
 
-        if (y-1 >= 0 && world[x][y-1].value < 1) {
+        if (y-1 >= 0 && world[x][y-1].value < max) {
             neighbours.push(world[x][y-1])
         }
-        if (y+1 < world_height && world[x][y+1].value < 1) {
+        if (y+1 < world_height && world[x][y+1].value < max) {
             neighbours.push(world[x][y+1])
         }
-        if (x-1 >= 0 && world[x-1][y].value < 1 ) {
+        if (x-1 >= 0 && world[x-1][y].value < max ) {
             neighbours.push(world[x-1][y])
         }
-        if (x+1 < world_width && world[x+1][y].value < 1) {
+        if (x+1 < world_width && world[x+1][y].value < max) {
             neighbours.push(world[x+1][y])
         }
+		
+		//diagonals
+
             
         return neighbours
     }
 }
-
-
 
 function draw() {
     ctx.fillStyle = '#ccc';
@@ -191,11 +197,11 @@ function draw() {
                 
             } else if (world[x][y].player == true) {
                 world[x][y].player = false;
-                player_position = [x,y]
+                player_position = {x: x,y: y}
                 ctx.fillStyle = 'green'
             } else if (world[x][y].enemy == true) {
                 world[x][y].enemy = false;
-                enemy_position = [x,y]
+                enemy_position = {x: x,y: y}
                 ctx.fillStyle = 'red'
             } else {
                 ctx.fillStyle = 'white'
@@ -208,7 +214,7 @@ function draw() {
 
 }
 
-function resetgame() {
+function reset_game() {
     ctx.beginPath();
     ctx.clearRect(0, 0, canvas.width, canvas.height)
     createWorld();
@@ -216,66 +222,69 @@ function resetgame() {
 
 function update_player(direction) {
 
-    var move_to = [player_position[0] + direction[0], player_position[1] + direction[1]]
+    var move_to = {x: player_position.x + direction.x, y: player_position.y + direction.y}
 
     var moves = calculateNextMove(world, enemy_position, player_position)
     update_enemy(moves[1]);
 
-    if (enemy_position[0] == move_to[0] && enemy_position[1] == move_to[1] || enemy_position[0] == player_position[0] && enemy_position[1] == player_position[1]) {
+    if (enemy_position.x == move_to.x && enemy_position.y == move_to.y || enemy_position.x == player_position.x && enemy_position.y == player_position.y) {
         alert("game over! you died!");
         console.log(player_position)
-        resetgame();
-    }
-
-    if (!(world[move_to[0]] == undefined || world[move_to[0]][move_to[1]] == undefined)) {
-
-        if ( world[move_to[0]][move_to[1]].value != 1 ) {
-
-            ctx.beginPath();
-            ctx.clearRect(player_position[0] * tile_width, player_position[1] * tile_height, tile_width, tile_height)
-            ctx.fillStyle = 'white'
-            ctx.rect(player_position[0] * tile_width, player_position[1] * tile_height, tile_width, tile_height);
-            ctx.fill()
-
-            player_position = [move_to[0], move_to[1]]
-
-            ctx.beginPath();
-            ctx.clearRect(player_position[0] * tile_width, player_position[1] * tile_height, tile_width, tile_height)
-            ctx.fillStyle = 'green'
-            ctx.rect(player_position[0] * tile_width, player_position[1] * tile_height, tile_width, tile_height);
-            ctx.fill()
-
-        } else {
-            console.log("hit object");
-        }
+        reset_game();
     } else {
-        console.log("out of bounds");
+        if (!(world[move_to.x] == undefined || world[move_to.x][move_to.y] == undefined)) {
+    
+            if ( world[move_to.x][move_to.y].value != 1 ) {
+    
+                ctx.beginPath();
+                ctx.clearRect(player_position.x * tile_width, player_position.y * tile_height, tile_width, tile_height)
+                ctx.fillStyle = 'white'
+                ctx.rect(player_position.x * tile_width, player_position.y * tile_height, tile_width, tile_height);
+                ctx.fill()
+    
+                player_position.x = move_to.x
+                player_position.y = move_to.y
+    
+                ctx.beginPath();
+                ctx.clearRect(player_position.x * tile_width, player_position.y * tile_height, tile_width, tile_height)
+                ctx.fillStyle = 'green'
+                ctx.rect(player_position.x * tile_width, player_position.y * tile_height, tile_width, tile_height);
+                ctx.fill()
+    
+            } else {
+                console.log("hit object");
+            }
+        } else {
+            console.log("out of bounds");
+        }
     }
-    
-    
+
 }
 
 function update_enemy(move_to) {
 
-    world[enemy_position[0]][enemy_position[1]].value = 0
+    //clear the previous square the enemy was on
+    world[enemy_position.x][enemy_position.y].value = 0
 
     ctx.beginPath();
-    ctx.clearRect(enemy_position[0] * tile_width, enemy_position[1] * tile_height, tile_width, tile_height)
+    ctx.clearRect(enemy_position.x * tile_width, enemy_position.y * tile_height, tile_width, tile_height)
     ctx.fillStyle = 'white'
-    ctx.rect(enemy_position[0] * tile_width, enemy_position[1] * tile_height, tile_width, tile_height);
+    ctx.rect(enemy_position.x * tile_width, enemy_position.y * tile_height, tile_width, tile_height);
     ctx.fill()
 
-    enemy_position = [move_to[0], move_to[1]]
+    //update the new position of the enemy
+    enemy_position.x = move_to.x
+    enemy_position.y = move_to.y
 
-    world[move_to[0]][move_to[1]].value = 3
+    //update the world item
+    world[enemy_position.x][enemy_position.y].value = 3
 
     ctx.beginPath();
-    ctx.clearRect(enemy_position[0] * tile_width, enemy_position[1] * tile_height, tile_width, tile_height)
+    ctx.clearRect(enemy_position.x * tile_width, enemy_position.y * tile_height, tile_width, tile_height)
     ctx.fillStyle = 'red'
-    ctx.rect(enemy_position[0] * tile_width, enemy_position[1] * tile_height, tile_width, tile_height);
+    ctx.rect(enemy_position.x * tile_width, enemy_position.y * tile_height, tile_width, tile_height);
     ctx.fill()
 }
-
 
 
 function calculateNextMove(world, path_start, path_end) {
@@ -292,10 +301,10 @@ function calculateNextMove(world, path_start, path_end) {
     }
     
     function findPath (start, end, grid) {
-        var start_x = start[0];
-        var start_y = start[1];
-        var end_x = end[0];
-        var end_y = end[1]
+        var start_x = start.x
+        var start_y = start.y;
+        var end_x = end.x;
+        var end_y = end.y
 
         var closed_set = []
         var open_set = []
@@ -331,7 +340,7 @@ function calculateNextMove(world, path_start, path_end) {
                 var path = [[node.x, node.y]]
                 while (node.parent) {
                     node = node.parent;
-                    path.push([node.x, node.y])
+                    path.push({x: node.x, y: node.y})
                 }
                 return path.reverse();
             }
@@ -421,16 +430,16 @@ onkeydown =  (e) => {
 
     switch(key) {
         case binds.right: 
-            update_player([1,0]);
+            update_player({x:1, y:0});
             break;
         case binds.left:
-            update_player([-1,0]);
+            update_player({x:-1, y:0});
             break;
         case binds.up:
-            update_player([0,-1]);
+            update_player({x:0, y:-1});
             break;
         case binds.down:
-            update_player([0, 1]);
+            update_player({x:0, y:1});
             break;
     }
 }
