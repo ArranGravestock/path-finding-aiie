@@ -4,6 +4,79 @@ window.onload = function() {
     initialise()
 }
 
+
+
+
+
+
+
+class Node {
+    constructor(x, y, walkable, value) {
+        this.x = x
+        this.y = y
+        this.value = value
+        this.walkable = walkable;
+
+    }
+
+    getNeighbours() {
+        let neighbours = []
+        
+        if (this.y-1 >= 0) {
+            neighbours.push(world[this.x][this.y-1])
+        }
+        if (this.y+1 < world_height) {
+            neighbours.push(world[this.x][this.y+1])
+        }
+        if (this.x-1 >= 0) {
+            neighbours.push(world[this.x-1][this.y])
+        }
+        if (this.x+1 < world_width) {
+            neighbours.push(world[this.x+1][this.y])
+        }
+        return neighbours;
+    }
+}
+
+class Time {
+    constructor(time) {
+        this.time = time
+    }
+    update_time(time) {
+        this.time = time
+        this.redraw_time()
+    }
+    
+    redraw_time() {
+        ctx.clearRect(world_width * tile_width, 20, 300, 25)
+        ctx.fillStyle = 'white'
+        ctx.font = "20px Arial"
+        ctx.fillText(`Path calculated in (${this.time})ms`, world_width * tile_width + 10, 40)
+    }
+    
+}
+
+
+class Score {
+    constructor(score) {
+        this.score = score;
+    }
+
+    update_score(points) {
+        this.score += points
+        this.redraw_score()
+    }
+    
+    redraw_score() {
+        ctx.clearRect(world_width * tile_width, 0, 100, 20)
+        ctx.fillStyle = 'white'
+        ctx.font = "20px Arial"
+        ctx.fillText(this.score, world_width * tile_width + 10, 20)
+    }
+    
+}
+
+
 const world_width = 24
 const world_height = 24
 
@@ -21,13 +94,13 @@ let path_end = []
 let player_position = {}
 let enemy_position = {}
 
-let score = 0
-let search_time = 0
-
 const enemy_interval = setInterval(update_enemy, 450)
 
 let canvas, ctx = false
 
+
+let score = new Score(0)
+let search_time = new Time(0);
 
 function initialise() {
     canvas = document.getElementById('canvas')
@@ -43,18 +116,16 @@ function initialise() {
     } 
 }
 
-function Node(x, y, value) {
-    this.x = x
-    this.y = y
-    this.value = value
-}
+
+
 
 function createWorld() {
     for (let x = 0; x < world_width; x++) {
         world[x] = []
 
         for (let y = 0; y < world_height; y++) {
-            world[x][y] = new Node(x, y, 1)
+            world[x][y] = new Node(x, y, true, 0.9)
+            
         }
     }
     
@@ -76,64 +147,64 @@ function generateMaze() {
         enemy_position = {x: 8, y: 8}
 
 
-        world[1][1].value = 2
-        world[1][2].value = 2
-        world[1][3].value = 2
+        world[1][1].walkable = false
+        world[1][2].walkable = false
+        world[1][3].walkable = false
 
         world[1][4].coin = true
         world[1][4].coin = true
 
-        world[1][5].value = 2
-        world[1][6].value = 1
-        world[1][7].value = 2
+        world[1][5].walkable = false
+        world[1][6].walkable = true
+        world[1][7].walkable = false
 
-        world[2][1].value = 1
-        world[2][2].value = 1
-        world[2][3].value = 2
-        world[2][4].value = 1
-        world[2][5].value = 2
-        world[2][6].value = 1
-        world[2][7].value = 2
+        world[2][1].walkable = true
+        world[2][2].walkable = true
+        world[2][3].walkable = false
+        world[2][4].walkable = true
+        world[2][5].walkable = false
+        world[2][6].walkable = true
+        world[2][7].walkable = false
 
-        world[3][1].value = 2
-        world[3][2].value = 1
-        world[3][3].value = 2
-        world[3][4].value = 1
-        world[3][5].value = 1
-        world[3][6].value = 1
-        world[3][7].value = 2
+        world[3][1].walkable = false
+        world[3][2].walkable = true
+        world[3][3].walkable = false
+        world[3][4].walkable = true
+        world[3][5].walkable = true
+        world[3][6].walkable = true
+        world[3][7].walkable = false
 
-        world[4][1].value = 2
-        world[4][2].value = 1
-        world[4][3].value = 2
-        world[4][4].value = 2
-        world[4][5].value = 2
-        world[4][6].value = 1
-        world[4][7].value = 2
+        world[4][1].walkable = false
+        world[4][2].walkable = true
+        world[4][3].walkable = false
+        world[4][4].walkable = false
+        world[4][5].walkable = false
+        world[4][6].walkable = true
+        world[4][7].walkable = false
 
-        world[5][1].value = 2
-        world[5][2].value = 1
-        world[5][3].value = 1
-        world[5][4].value = 1
-        world[5][5].value = 2
-        world[5][6].value = 1
-        world[5][7].value = 2
+        world[5][1].walkable = false
+        world[5][2].walkable = true
+        world[5][3].walkable = true
+        world[5][4].walkable = true
+        world[5][5].walkable = false
+        world[5][6].walkable = true
+        world[5][7].walkable = false
 
-        world[6][1].value = 2
-        world[6][2].value = 1
-        world[6][3].value = 2
-        world[6][4].value = 1
-        world[6][5].value = 2
-        world[6][6].value = 1
-        world[6][7].value = 1
+        world[6][1].walkable = false
+        world[6][2].walkable = true
+        world[6][3].walkable = false
+        world[6][4].walkable = true
+        world[6][5].walkable = false
+        world[6][6].walkable = true
+        world[6][7].walkable = true
 
-        world[7][1].value = 2
-        world[7][2].value = 1
-        world[7][3].value = 2
-        world[7][4].value = 1
-        world[7][5].value = 2
-        world[7][6].value = 2
-        world[7][7].value = 2
+        world[7][1].walkable = false
+        world[7][2].walkable = true
+        world[7][3].walkable = false
+        world[7][4].walkable = true
+        world[7][5].walkable = false
+        world[7][6].walkable = false
+        world[7][7].walkable = false
     } else {
         generateRandomWalls(world_width, world_height)
         generateCoin(4)
@@ -144,26 +215,27 @@ function generateRandomWalls(width, height) {
     for (let x = 0; x < width; x++) {
         for (let y = 0; y < height; y++) {
             if (Math.random() > 0.7) {
-                world[x][y].value = 2
+                world[x][y].walkable = false
+                world[x][y].value = 1;
             }
         }
     }
 
     for(let x = 0; x < width; x++) {
         for (let y = 0; y < height; y++) {
-            if (world[x][y].value == 2) {
-                let neighbours = getNeighbours(world[x][y], 2)
-                
-                if (neighbours.length == 4) {
-                    world[x][y].value = 1
+            let neighbours = world[x][y].getNeighbours()
+            let i = 0;
+            let j = 0;
+            for(let tile in neighbours) {
+                if (tile.walkable) {
+                    i++;
+                } else {
+                    j++;
                 }
-            } 
-			else if (world[x][y].value == 1) {
-                let neighbours = getNeighbours(world[x][y], 2)
-				if (neighbours.length == 4) {
-					world[x+1][y].value = 2
-				}
-			}
+            }
+            if( i == 4 || j == 4) {
+                world[i][j].walkable = !world[i][j].walkable
+            }
         }
     }
 
@@ -173,8 +245,7 @@ function generateRandomWalls(width, height) {
             break
         }
         for (let y = 0; y < height; y++) {
-            if (world[x][y].value == 1) {
-                console.log(`player set at : ${world[x][y].x}`)
+            if (world[x][y].walkable) {
                 world[x][y].player = true
                 player_set = true
                 break
@@ -188,7 +259,7 @@ function generateRandomWalls(width, height) {
             break
         }
         for (let y = width-1; y > 0; y--) {
-            if (world[x][y].value == 1) {
+            if (world[x][y].walkable) {
                 world[x][y].enemy = true
                 enemy_set = true
                 break
@@ -207,16 +278,18 @@ function draw() {
 
             ctx.beginPath()
             ctx.rect(x * tile_width, y * tile_height, tile_width, tile_height)
-            
-            if (world[x][y].value == 2) {
+
+            if (!world[x][y].walkable) {
                 ctx.fillStyle = '#666'
             } else if (world[x][y].player == true) {
                 world[x][y].player = false
-                player_position = {x: x,y: y}
+                player_position.x = x;
+                player_position.y = y;
                 ctx.fillStyle = 'green'
             } else if (world[x][y].enemy == true) {
                 world[x][y].enemy = false
-                enemy_position = {x: x,y: y}
+                enemy_position.x = x;
+                enemy_position.y = y;
                 ctx.fillStyle = 'red'
             } else if (world[x][y].coin == true) {
                 ctx.fillStyle = 'yellow'
@@ -228,42 +301,18 @@ function draw() {
         }
     }
 
-    ctx.fillStyle = 'white'
-    ctx.font = "20px Arial"
-    ctx.fillText(score, world_width * tile_width + 10, 20)
+    score.redraw_score();
 }
 
 function reset_game() {
-    alert(`Game over! You scored ${score} points`)
+    alert(`Game over! You scored ${score.score} points`)
     ctx.beginPath()
     ctx.clearRect(0, 0, canvas.width, canvas.height)
-    score = 0
+    score = new Score(0)
     createWorld()
 }
 
-function update_score(points) {
-    score += points
-    redraw_score(score)
-}
 
-function redraw_score(score) {
-    ctx.clearRect(world_width * tile_width, 0, 100, 20)
-    ctx.fillStyle = 'white'
-    ctx.font = "20px Arial"
-    ctx.fillText(score, world_width * tile_width + 10, 20)
-}
-
-function update_time(time) {
-    search_time = time
-    redraw_time(search_time)
-}
-
-function redraw_time(time) {
-    ctx.clearRect(world_width * tile_width, 20, 300, 25)
-    ctx.fillStyle = 'white'
-    ctx.font = "20px Arial"
-    ctx.fillText(`Path calculated in (${time})ms`, world_width * tile_width + 10, 40)
-}
 
 function update_player(direction) {
 
@@ -275,13 +324,13 @@ function update_player(direction) {
 
         if (!(world[move_to.x] == undefined || world[move_to.x][move_to.y] == undefined)) {
     
-            if ( world[move_to.x][move_to.y].value <= 1 ) {
+            if ( world[move_to.x][move_to.y].walkable ) {
 
                 if (world[move_to.x][move_to.y].coin == true) {
                     world[move_to.x][move_to.y].coin = false
-                    world[move_to.x][move_to.y].value = 1
+                    world[move_to.x][move_to.y].walkable = true
 
-                    update_score(100)
+                    score.update_score(100)
                     generateCoin(1)
                 }
     
@@ -318,9 +367,9 @@ function generateCoin(number_to_draw) {
         }
         for (let y = 0; y < world_height; y++) {
             if (Math.random() > 0.99) {
-                if (world[x][y].value == 1) {
+                if (world[x][y].walkable) {
                     world[x][y].coin = true
-                    world[x][y].value = 0
+                    world[x][y].value = 0.4
                     i++
                     break
                 }
@@ -328,7 +377,6 @@ function generateCoin(number_to_draw) {
         }
     }
 
-    let neighbours = getNeighbours(player_position, 1)
     redrawCoins()
 }
 
@@ -378,7 +426,6 @@ function draw_path(moves) {
 function update_enemy() {
 
     const moves = calculateNextMove(world, enemy_position, player_position)
-
     //draw_path(moves);
 
     const move_to = moves[1]
@@ -398,8 +445,8 @@ function update_enemy() {
         //if enemy steps over a coin destroy it :)
         if (world[enemy_position.x][enemy_position.y].coin == true) {
             world[enemy_position.x][enemy_position.y].coin = false
-            world[enemy_position.x][enemy_position.y].value = 0
-            update_score(-100)
+            world[enemy_position.x][enemy_position.y].value = 0.4
+            score.update_score(-100)
             generateCoin(1)
         }
 
@@ -435,7 +482,6 @@ function calculateNextMove(world, path_start, path_end) {
     let walkable = 0
 
     function ManhattanDistance(start, end) {
-        //console.log(`${start.x} ${start.y} ${end.x} ${end.y}`)
         return (Math.abs(start.x - end.x) + Math.abs(start.y - end.y))
     }
     
@@ -449,9 +495,9 @@ function calculateNextMove(world, path_start, path_end) {
         let closed_set = []
         let open_set = []
         
-        let end_node = new Node(end_x, end_y, 0)
-        
-        let start_node = new Node(start_x, start_y, 0)
+        let end_node = new Node(end_x, end_y, false, 0)
+        let start_node = new Node(start_x, start_y, false, 0)
+
         start_node.g = 0
         start_node.f = 0
 
@@ -476,6 +522,7 @@ function calculateNextMove(world, path_start, path_end) {
             closed_set.push(node)
 
             //if matching paths then target found
+
             if (node == world[end_x][end_y]) {
                 let path = [{x: node.x, y: node.y}]
                 while (node.parent) {
@@ -483,12 +530,12 @@ function calculateNextMove(world, path_start, path_end) {
                     path.push({x: node.x, y: node.y})
                 }
                 let time_end = Date.now()
-                update_time(time_end - time_start)
+                search_time.update_time(time_end - time_start)
                 return path.reverse()
             }
 
             //get the neighbours for the node
-            let neighbours = getNeighbours(node, 2)
+            let neighbours = getNeighbours(node, 1)
 
             //for every neighbour
             for (let i = 0; i < neighbours.length; i++) {
