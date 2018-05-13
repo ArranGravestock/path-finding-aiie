@@ -70,12 +70,16 @@ class Score {
 }
 
 let canvas, ctx = false
-
-const world_width = 16
-const world_height = 16
-
 const tile_width = 32
 const tile_height = 32
+
+const world_width = 25
+const world_height = Math.round(window.innerHeight / tile_height)
+
+	
+		
+
+
 
 let world = [[]]
 let current_path = []
@@ -264,7 +268,7 @@ function draw() {
 
             ctx.beginPath()
             ctx.rect(x * tile_width, y * tile_height, tile_width, tile_height)
-
+			
             if (!world[x][y].walkable) {
                 ctx.fillStyle = '#666'
             } else if (world[x][y].player == true) {
@@ -441,6 +445,7 @@ function update_enemy() {
         ctx.fillStyle = 'white'
         ctx.rect(enemy_position.x * tile_width, enemy_position.y * tile_height, tile_width, tile_height)
         ctx.fill()
+		
 
         //update the new position of the enemy
         enemy_position.x = move_to.x
