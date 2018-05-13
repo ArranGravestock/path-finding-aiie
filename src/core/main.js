@@ -4,12 +4,6 @@ window.onload = function() {
     initialise()
 }
 
-
-
-
-
-
-
 class Node {
     constructor(x, y, walkable, value) {
         this.x = x
@@ -56,7 +50,6 @@ class Time {
     
 }
 
-
 class Score {
     constructor(score) {
         this.score = score;
@@ -76,15 +69,13 @@ class Score {
     
 }
 
+let canvas, ctx = false
 
-const world_width = 24
-const world_height = 24
+const world_width = 16
+const world_height = 16
 
 const tile_width = 32
 const tile_height = 32
-
-//const tile_width = window.innerWidth / world_width
-//const tile_height = window.innerHeight / world_height
 
 let world = [[]]
 let current_path = []
@@ -95,10 +86,6 @@ let player_position = {}
 let enemy_position = {}
 
 const enemy_interval = setInterval(update_enemy, 450)
-
-let canvas, ctx = false
-
-
 let score = new Score(0)
 let search_time = new Time(0);
 
@@ -115,8 +102,6 @@ function initialise() {
         createWorld()
     } 
 }
-
-
 
 
 function createWorld() {
@@ -266,6 +251,7 @@ function generateRandomWalls(width, height) {
             }
         }
     }
+
 }
 
 function draw() {
@@ -599,7 +585,6 @@ function getNeighbours(node, max) {
         
     return neighbours
 }
-
 
 let config = 
 {
