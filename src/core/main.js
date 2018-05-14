@@ -113,7 +113,7 @@ function createWorld() {
         world[x] = []
 
         for (let y = 0; y < world_height; y++) {
-            world[x][y] = new Node(x, y, true, 0.9)
+            world[x][y] = new Node(x, y, false, 1)
             
         }
     }
@@ -201,25 +201,92 @@ function generateMaze() {
 }
 
 function generateRandomWalls(width, height) {
-    for (let x = 0; x < width; x++) {
-        for (let y = 0; y < height; y++) {
-            if (Math.random() > 0.7) {
-                world[x][y].walkable = false
-                world[x][y].value = 1;
+
+
+    var size = width * height
+    var frontier = []
+
+    //random cell
+    var x = Math.floor(Math.random() * width)
+    var y = Math.floor(Math.random() * height)
+    var cell = world[x][y]
+
+    world[x][y].t1 = x
+    world[x][y].t2 = y
+
+    frontier.push(world[x][y])
+
+    while (frontier.length > 0) {
+        //pick random cell from the available list
+        var rand = Math.floor(Math.random() * frontier.length)
+        var randWall = frontier[rand]
+
+
+        if (!world[randWall.x][randWall.y].walkable) {
+
+            world[randWall.x][randWall.y].value = 0.9
+            world[randWall.x][randWall.y].walkable = true
+            world[randWall.t1][randWall.t2].value = 0.9
+            world[randWall.t1][randWall.t2].walkable = true
+
+            getFrontiers(world[randWall.x][randWall.y])
+
+        }
+
+        frontier.splice(rand, 1)
+
+      
+    }
+
+    function isBound(node, x, y) {
+        if (((node.x + x) < 0) || ((node.x + x) > width-1) || ((node.y + y ) < 0) || ((node.y + y) > height-1)) {
+            return false;
+        } 
+
+        if (world[node.x + x][node.y + y].walkable) {
+            return false
+        }
+
+        return true;
+    }
+
+    function getFrontiers(node) {
+        let x = node.x
+        let y = node.y
+
+        if (isBound(world[x][y], 0, -2)) {
+            world[x][y-2].t1 = x
+            world[x][y-2].t2 = y - 1
+            frontier.push(world[x][y-2])
+        }
+        if (isBound(world[x][y], 0, 2)) {
+            world[x][y+2].t1 = x
+            world[x][y+2].t2 = y + 1
+            frontier.push(world[x][y+2])
+        }
+        if (isBound(world[x][y], -2, 0) ) {
+            world[x-2][y].t1 = x - 1
+            world[x-2][y].t2 = y
+            frontier.push(world[x-2][y])
+        }
+        if (isBound(world[x][y], 2, 0)) {
+            world[x+2][y].t1 = x + 1
+            world[x+2][y].t2 = y
+            frontier.push(world[x+2][y])
+        }
+    }
+
+    //open random parts of the maze
+    var difficulty = 0.8
+    for (var x = 0; x < width; x++) {
+        for (var y = 0; y < height; y++) {
+            if (Math.random() > difficulty) {
+                world[x][y].walkable = true;
+                world[x][y].value = 0.9
             }
         }
     }
 
-    for(let x = 0; x < width; x++) {
-        for (let y = 0; y < height; y++) {
-            let count = getWallCount(world[x][y], false, 1)
-
-            if(count >= 3) {
-                world[x][y].walkable = false;
-                world[x][y].value = 1;
-            }
-        }
-    }
 
     let player_set = false
     for (let x = 0; x < width; x++) {
@@ -247,42 +314,6 @@ function generateRandomWalls(width, height) {
                 break
             }
         }
-    }
-
-    function getWallCount(node, diagonal, val) {
-        let x = node.x
-        let y = node.y
-    
-        var i = 0;
-        if (y-1 >= 0 && world[x][y-1].value == val) {
-            i++
-        }
-        if (y+1 < world_height && world[x][y+1].value == val) {
-            i++
-        }
-        if (x-1 >= 0 && world[x-1][y].value == val) {
-            i++
-        }
-        if (x+1 < world_width && world[x+1][y].value == val) {
-            i++
-        }
-        
-        if (diagonal) {
-            if(world[x+1][y+1].value == val) {
-                i++
-            }
-            if(world[x+1][y-1].value == val) {
-                i++
-            }
-            if(world[x-1][y+1].value == val) {
-                i++
-            }
-            if(world[x-1][y-1].value == val) {
-                i++
-            }
-        }
-
-        return i
     }
 
 }
