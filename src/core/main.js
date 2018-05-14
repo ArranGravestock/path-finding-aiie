@@ -276,14 +276,65 @@ function generateRandomWalls(width, height) {
         }
     }
 
+    function getWallCount(node, diagonal, val) {
+        let x = node.x
+        let y = node.y
+    
+        var i = 0;
+        if (y-1 >= 0 && world[x][y-1].value == val) {
+            i++
+        }
+        if (y+1 < world_height && world[x][y+1].value == val) {
+            i++
+        }
+        if (x-1 >= 0 && world[x-1][y].value == val) {
+            i++
+        }
+        if (x+1 < world_width && world[x+1][y].value == val) {
+            i++
+        }
+        
+        if (diagonal) {
+            if(world[x+1][y+1].value == val) {
+                i++
+            }
+            if(world[x+1][y-1].value == val) {
+                i++
+            }
+            if(world[x-1][y+1].value == val) {
+                i++
+            }
+            if(world[x-1][y-1].value == val) {
+                i++
+            }
+        }
+
+        return i
+}
+
     //open random parts of the maze
     var difficulty = 0.8
     for (var x = 0; x < width; x++) {
         for (var y = 0; y < height; y++) {
+
+
             if (Math.random() > difficulty) {
                 world[x][y].walkable = true;
                 world[x][y].value = 0.9
             }
+
+            if(x == 0 || x == width-1 || y == 0 || y == height-1) {
+                if(getWallCount(world[x][y], false, 1) >= 2) {
+                    world[x][y].walkable = false;
+                    world[x][y].value = 1;
+                }
+            }
+
+            //close off dead ends (more unforgiving)
+            // if(getWallCount(world[x][y], false, 1) >= 3) {
+            //     world[x][y].walkable = false;
+            //     world[x][y].value = 1;
+            // }
         }
     }
 
@@ -411,21 +462,23 @@ function update_player(direction) {
 
 function generateCoin(number_to_draw) {
     let i = 0
-    for (let x = 0; x < world_width; x++) {
-        if (i == number_to_draw) {
-            break
-        }
-        for (let y = 0; y < world_height; y++) {
-            if (Math.random() > 0.99) {
-                if (world[x][y].walkable) {
-                    world[x][y].coin = true
-                    world[x][y].value = 0.4
-                    i++
-                    break
+    while(i != number_to_draw) {
+        for (let x = 0; x < world_width; x++) {
+            if (i == number_to_draw) {
+                break
+            }
+            for (let y = 0; y < world_height; y++) {
+                if (Math.random() > 0.99) {
+                    if (world[x][y].walkable) {
+                        world[x][y].coin = true
+                        world[x][y].value = 0.4
+                        i++
+                        break
+                    }
                 }
             }
         }
-    }
+    }   
 
     redrawCoins()
 }
