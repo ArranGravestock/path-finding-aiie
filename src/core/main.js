@@ -76,11 +76,6 @@ const tile_height = 32
 const world_width = 25
 const world_height = Math.round(window.innerHeight / tile_height)
 
-	
-		
-
-
-
 let world = [[]]
 let current_path = []
 let path_start = [world_height, world_width]
@@ -359,7 +354,7 @@ function generateRandomWalls(width, height) {
             break
         }
         for (let y = width-1; y > 0; y--) {
-            if (world[x][y].walkable) {
+            if (world[x][y]) {
                 world[x][y].enemy = true
                 enemy_set = true
                 break
@@ -451,10 +446,10 @@ function update_player(direction) {
                 ctx.fill()
     
             } else {
-                console.log("hit object")
+                // console.log("hit object")
             }
         } else {
-            console.log("out of bounds")
+            // console.log("out of bounds")
         }
     }
 
